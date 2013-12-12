@@ -57,23 +57,6 @@ bool ReemcHardwareGazebo::initSim(const std::string& robot_ns,
 {
   using gazebo::physics::JointPtr;
 
-  // Wait for robot model to become available
-  const string robot_description_name = "robot_description";
-  string robot_description;
-  while (ros::ok() && !nh.getParam(robot_description_name, robot_description))
-  {
-    ROS_WARN_STREAM_ONCE("Waiting for robot description: parameter '" << robot_description_name << "' on namespace '" << nh.getNamespace() << "'.");
-    ros::Duration(1.0).sleep();
-  }
-  ROS_INFO("Found robot description");
-
-  boost::shared_ptr<urdf::ModelInterface> urdf = urdf::parseURDF(robot_description);
-  if (!urdf)
-  {
-    throw std::runtime_error("Could not load robot description.");
-  }
-  ROS_DEBUG("Parsed robot description");
-
   // Cleanup
   sim_joints_.clear();
   jnt_pos_.clear();
@@ -116,7 +99,7 @@ bool ReemcHardwareGazebo::initSim(const std::string& robot_ns,
     const string name = cmd_handle.getName();
 
     using namespace joint_limits_interface;
-    boost::shared_ptr<const urdf::Joint> urdf_joint = urdf->getJoint(name);
+    boost::shared_ptr<const urdf::Joint> urdf_joint = urdf_model->getJoint(name);
     JointLimits limits;
     SoftJointLimits soft_limits;
     if (!getJointLimits(urdf_joint, limits) || !getSoftJointLimits(urdf_joint, soft_limits))
